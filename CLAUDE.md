@@ -83,7 +83,7 @@
 
 | | 로컬 Windows (데스크톱 앱·VS Code·CLI) | 클라우드 Linux (claude.ai/code) |
 |---|---|---|
-| 셸 | Git Bash가 기본. 사용자가 붙여 넣을 명령은 bash 문법·`/d/...` 경로로 준다. PowerShell은 5.1 | bash |
+| 셸 | 에이전트 도구는 Git Bash·PowerShell 5.1. 사용자는 PowerShell 창도 쓰므로 붙여 넣을 명령은 **어느 셸용인지 밝히고**, 모르면 PowerShell 문법으로 준다 | bash |
 | Python | `PYTHONUTF8=1` 필수. 프로젝트가 지정한 venv를 쓴다 | `python3`, UTF-8 기본 |
 | 인코딩 | 콘솔·일부 로그가 cp949. 바이트로 읽어 `errors='replace'`로 디코드 | UTF-8 |
 | 주의 | 이스케이프가 든 코드는 bash heredoc 대신 파일 쓰기 도구로 쓴다. Smart App Control이 서명 없는 exe/DLL을 막을 수 있다(끄는 것은 사용자 결정) | `~/.claude`가 없다. 공용 헌법·스킬은 레포의 SessionStart 훅이 받아 온다. 받지 못했다는 알림이 있으면 먼저 사용자에게 알린다 |
