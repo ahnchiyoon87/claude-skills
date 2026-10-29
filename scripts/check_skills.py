@@ -23,7 +23,7 @@ RETIRED = [
     "lecture-work", "lecture-resume", "lecture-handoff", "lecture-report", "lecture-contract",
     "lecture-guide", "lecture-sync", "lecture-package", "lecture-upload",
     "robo-work", "robo-handoff", "robo-report", "robo-tune", "robo-research-note", "robo-demo-recording",
-    "goal-prompt", "todo-value-dod",
+    "goal-prompt", "todo-value-dod", "debug", "e2e-verify", "handoff", "demo-video", "worktime-json",
 ]
 CODEX = [r"\bCodex\b", r"\.agents[/\\]", r"\bAGENTS\.md\b", r"openai\.yaml", r"\.codex[/\\]"]
 PATH_RE = re.compile(r"(?<![\w/.-])((?:\.\./|\./)?(?:[\w가-힣.-]+/)*(?:references|scripts|assets|templates)/[\w가-힣./ -]*?[\w가-힣-]+\.[A-Za-z0-9]+)")

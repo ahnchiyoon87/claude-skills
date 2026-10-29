@@ -50,7 +50,7 @@ clone 에 실패하면 조용히 넘어가지 않고 "부트스트랩 실패"를
 
 ```bash
 python scripts/build_zips.py          # 전부
-python scripts/build_zips.py handoff  # 하나만
+python scripts/build_zips.py task-prompt  # 하나만
 ```
 
 `dist/<이름>.zip` 이 생긴다. 업로드는 claude.ai 설정 → Skills 에서 직접 한다(자동화 없음).
