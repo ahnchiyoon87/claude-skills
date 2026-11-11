@@ -1,15 +1,32 @@
 ---
 name: meeting-minutes
-description: "회의 전사본(클로바노트 등)을 시간대별 주제 요약으로 만든다. 「회의록 써줘」「이 전사 요약해줘」에 쓴다. 입력은 Participants N mm:ss 형식 텍스트, 음성 파일이면 먼저 전사한다."
+description: "회의 녹화·음성·전사본을 시간대별 주제 요약으로 만들고, 상시 회의는 Zoom 녹화 받기 → YouTube 비공개 업로드 → 무료 로컬 전사 → 요약 → 「2026 회의록」 Google Docs 쓰기까지 한다. 「회의록 써줘」「이 전사 요약해줘」「오늘 회의 올려줘」에 쓴다."
 ---
 
-# 회의록 — 전사본 → 시간대별 주제 요약
+# 회의록 — 녹화 → 전사 → 시간대별 주제 요약 → 회의록 문서
 
 ## 입력
 
-- **전사 텍스트**: `Participants 3 02:14` 처럼 발화자와 시작 시각이 줄 머리에 붙은 클로바노트 내보내기, 또는 같은 모양의 텍스트. 이것이 기본 입력이다.
-- **음성 파일만 있으면** Claude가 직접 들을 수 없으므로 먼저 STT로 시각이 붙은 텍스트를 만들어 달라고 알린다(faster-whisper · ElevenLabs Scribe 등, 사용자가 고른 것). 전사본 없이 요약을 지어내지 않는다.
+- **전사 텍스트**: `Participants 3 02:14` 처럼 발화자와 시작 시각이 줄 머리에 붙은 클로바노트 내보내기, 또는 아래 전사 스크립트의 출력(`이름 mm:ss` 줄 + 말). 전사본 없이 요약을 지어내지 않는다.
+- **음성 · 영상 파일**이면 아래 「전사」로 먼저 시각이 붙은 텍스트를 만든다.
 - 같은 폴더나 프로젝트에 `용어집.md`(제품명 · 고객사 · 사람 이름 · 전문 용어)가 있으면 읽고, 이 스킬의 [references/용어집.md](references/용어집.md)와 합쳐 쓴다.
+
+## 상시 회의 한 바퀴 (이 PC, 매일 저녁)
+
+대상은 Zoom 「Robot Framework(상시)」(17:30 시작) 녹화 하나다. 아침 · 낮 회의는 다루지 않는다. 각 단계는 실패하면 그 단계 이름과 원인(예: 「크롬 Zoom 로그인 필요」)을 보고하고 멈춘다. 다음 단계로 건너뛰지 않는다.
+
+1. **녹화 찾기**: Zoom 커넥터 `recordings_list`(그날 날짜)에서 topic에 「상시」가 든 회의를 고른다. `get_recording_resource`(types=transcript)로 Zoom 받아쓰기(발화자 이름의 출처)를 받아 파일로 둔다. 받아쓰기가 아직 없으면 녹화 처리가 덜 끝난 것이므로 기다렸다 다시 본다.
+2. **받기**: Zoom 커넥터는 파일을 주지 않는다. Claude in Chrome(Zoom 웹과 회의록 채널 구글 계정이 로그인된 「2」 프로필 창)에서 녹화의 `download_url`을 열면 `D:/다운로드`에 `GMT<날짜>-…_Recording.m4a`와 `…_1920x1200.mp4`가 떨어진다. 크기를 목록의 `file_size`와 대조한다.
+3. **YouTube 올리기**: `scripts/youtube_upload.py <mp4> "<M월 D일 회의록 - 오후>"` — 비공개 · 아동용 아님 · 재생목록 「내부 회의록」으로 올리고 `https://youtu.be/<id>`를 낸다. 크롬 확장은 파일을 10MB까지만 올리므로 업로드는 이 스크립트(YouTube API, `.secrets/` 토큰)로만 한다. 이어서 Studio(`studio.youtube.com/video/<id>/edit?authuser=1`) → 공개 상태 → 비공개 공유 → 「모든 uengine.org 사용자의 시청 허용」 → 완료 → 저장을 크롬에서 누르고, 다시 열어 「비공개 공유 대상: uengine.org의 모든 사용자」를 확인한다(API로는 바꿀 수 없다).
+4. **전사**: `scripts/transcribe.py <m4a> <출력.txt> --zoom <받아쓰기 JSON> --glossary references/용어집.md`.
+5. **요약**: 아래 「출력 형식」대로 `{"sections":[{"time","title","bullets"}]}` JSON을 만든다. 발화자 「유엔진」은 회의실 공용 계정이라 이름을 붙이지 않는다.
+6. **회의록 쓰기**: Google Docs 커넥터 `read_doc`(결과가 8MB라 파일로 저장된다)으로 「2026 회의록」(`1h6dDQJeiGCuP1KAw1-aCMUjFjxxRV_30sq-n610YoLo`)을 읽고 `scripts/minutes_insert.py <read 결과> <YYYY-MM-DD> <요약.json> <요청.json> [--header "YYYY-MM-DD(요일) 회의록 -오후 <youtu.be 링크>"]`로 요청을 만든 뒤 `update_doc`에 `writeControl.requiredRevisionId`와 함께 보낸다. 그날 머리줄이 없으면 `--header`로 맨 위에 만든다. 그날 아래에 이미 내용이 있으면 스크립트가 멈춘다(두 번 쓰지 않는다). 다시 읽어 그 날짜 아래 구간 수를 확인한다.
+
+## 전사 (무료, 이 PC)
+
+- 모델: faster-whisper large-v3-turbo(int8, CPU). 2026-11-11 비교에서 정답 대본 음성 글자 오류율 0.55%(Qwen3-ASR 1.7B 1.72%), 실제 회의에서 제품 · 영어 용어를 셋 중 가장 바르게 적었고, 이 노트북에서 실제 시간의 약 0.5~1배 걸린다. Zoom 받아쓰기는 용어를 많이 틀려 문장에는 쓰지 않고 발화자 이름만 시각이 겹치는 만큼 가져온다.
+- 환경: `claude-skills/.venv-stt`(faster-whisper · Google API 패키지), 모델 `claude-skills/.stt-models/fw-large-v3-turbo`. 둘 다 git 밖이다. Windows는 Hugging Face 캐시의 심볼릭 링크를 만들 수 없어 모델을 일반 폴더에 받는다. 음성 해독은 PyAV 대신 ffmpeg으로 한다(faster-whisper 1.2.1과 PyAV 19가 맞지 않는다).
+- 실행은 `<claude-skills>/.venv-stt/Scripts/python.exe -I -X utf8 scripts/transcribe.py …`. 다른 전사를 돌리는 중이면 끝난 뒤 돌린다(CPU를 나눠 쓰면 두 배 이상 느려진다).
 
 ## 출력 형식 (고정)
 
@@ -52,9 +69,9 @@ MM:SS~MM:SS
 
 ## 저장
 
-- 채팅에 결과를 보이고, 저장할 곳을 묻지 않고 끝낸다. 파일로 달라고 하면 `YYYY-MM-DD_회의록.md`로 쓴다.
-- Notion에 올리라고 했을 때만 Notion 커넥터로 페이지를 만든다. 회의 내용은 외부 전송이므로 사용자가 요청하지 않으면 올리지 않는다.
-- 전사 원문 · 회의 내용은 비밀로 다룬다. 커밋하거나 스킬 폴더에 남기지 않는다.
+- 전사본을 채팅에 붙여 요약만 달라고 하면 채팅에 결과를 보이고 끝낸다. 파일로 달라고 하면 `YYYY-MM-DD_회의록.md`로 쓴다.
+- 상시 회의 한 바퀴는 「2026 회의록」 문서에 쓴다. 다른 곳(Notion 등)에는 사용자가 요청할 때만 올린다.
+- 녹화 · 전사 원문 · 회의 내용 · `.secrets/`는 비밀로 다룬다. 커밋하거나 스킬 폴더에 남기지 않는다. 받은 m4a · mp4는 `D:/다운로드`에 두고 지우지 않는다(사용자 원본).
 
 ## 확인
 

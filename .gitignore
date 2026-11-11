@@ -1,3 +1,6 @@
 dist/
 __pycache__/
 *.pyc
+.venv-stt/
+.stt-models/
+.secrets/
