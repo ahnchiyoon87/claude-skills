@@ -1,11 +1,11 @@
 """회의 음성 → 발화자와 시각이 붙은 전사본.
 
 문장은 이 PC의 faster-whisper large-v3-turbo(무료, CPU)로 받아 적고,
-발화자 이름은 Zoom 클라우드 녹화의 받아쓰기(timeline)에서 시각이 가장 많이 겹치는 사람으로 붙인다.
+발화자 이름은 Zoom 클라우드 녹화의 받아쓰기(VTT, zoom_rec.py get이 받는다)에서 시각이 가장 많이 겹치는 사람으로 붙인다.
 
 사용:
   <skills>/.venv-stt/Scripts/python.exe -X utf8 transcribe.py <음성 파일> <출력.txt>
-      [--zoom <Zoom get_recording_resource 결과 JSON>] [--glossary <용어집.md>]
+      [--zoom <Zoom 받아쓰기 .vtt>] [--glossary <용어집.md>]
 
 출력 한 덩어리:
   <발화자> mm:ss
@@ -72,9 +72,18 @@ def ts(t):
 
 
 def load_zoom(path):
-    d = json.loads(Path(path).read_text(encoding="utf-8"))
-    tl = d["transcripts"][0]["timeline"]
-    return [(ts(x["ts"]), ts(x["end_ts"]), x["display_name"]) for x in tl]
+    """Zoom VTT 받아쓰기: 「hh:mm:ss.mmm --> hh:mm:ss.mmm」 다음 줄이 「이름: 말」."""
+    lines = Path(path).read_text(encoding="utf-8-sig").splitlines()
+    out = []
+    for i, line in enumerate(lines):
+        if "-->" in line and i + 1 < len(lines):
+            s, e = (x.strip() for x in line.split("-->"))
+            who = lines[i + 1].split(":", 1)[0].strip() if ":" in lines[i + 1] else None
+            if who:
+                out.append((ts(s), ts(e), who))
+    if not out:
+        sys.exit(f"{path}: 발화자가 붙은 VTT 구간이 없음")
+    return out
 
 
 def speaker_of(s, e, zoom):

@@ -1,11 +1,11 @@
 """회의록 Google Docs에서 그날 머리줄 바로 아래에 요약을 끼워 넣는 batchUpdate 요청을 만든다.
 
 사용:
-  python -X utf8 minutes_insert.py <read_doc 결과 JSON> <날짜 YYYY-MM-DD> <요약.json> <출력.json> [--header "머리줄 전체"]
+  python -X utf8 minutes_insert.py <gdocs.py read 결과 JSON> <날짜 YYYY-MM-DD> <요약.json> <출력.json> [--header "머리줄 전체"]
 요약.json: {"sections":[{"time":"09:49~12:42","title":"…","bullets":["…"]}]}
 - 머리줄(「2026-11-10(화) 회의록 …」)이 문서에 없으면 --header로 받은 머리줄을 맨 위에 새로 만든다(빈 줄 하나로 다음 날짜와 나눈다).
 - 머리줄 아래가 이미 비어 있지 않으면(그날 내용이 있으면) 멈춘다. 같은 날을 두 번 쓰지 않는다.
-출력: {"revisionId": …, "requests": […]} — update_doc에 writeControl.requiredRevisionId와 함께 보낸다.
+출력: {"revisionId": …, "requests": […]} — `gdocs.py update <문서ID> <출력.json>`으로 보낸다(읽은 판일 때만 쓴다).
 """
 import json, re, sys, argparse
 from pathlib import Path
@@ -24,7 +24,7 @@ def main():
     ap.add_argument("doc"); ap.add_argument("date"); ap.add_argument("summary"); ap.add_argument("out")
     ap.add_argument("--header")
     a = ap.parse_args()
-    d = json.loads(Path(a.doc).read_text(encoding="utf-8"))["content"]
+    d = json.loads(Path(a.doc).read_text(encoding="utf-8"))
     body = d["tabs"][0]["documentTab"]["body"]["content"]
     paras = [el for el in body if "paragraph" in el]
     pat = re.compile(re.escape(a.date).replace("\\-", "[-–]") + r"\s*\(")

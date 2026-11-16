@@ -7,7 +7,7 @@
 사용:
   python -X utf8 note_table.py <문서.docx> <작성자> <초안.json> <출력 폴더> [--per 4]
 초안.json: [{"date":"2026-08-31","weekday":"월","sections":{"목표","수행내용"[],"세부기록","실험측정","문제해결","산출물"[],"참고근거"[],"익일계획"}}]
-출력: 날짜 순서(오래된 것 먼저)로 묶은 batch_NN.json — 차례대로 update_doc에 보내면 최신 날짜가 맨 위에 온다.
+출력: 날짜 순서(오래된 것 먼저)로 묶은 batch_NN.json({"requests":[…]}) — 차례대로 `gdocs.py update`로 보내면 최신 날짜가 맨 위에 온다.
 """
 import json, re, sys, zipfile, argparse
 from pathlib import Path
@@ -172,7 +172,7 @@ def main():
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
     for i in range(0, len(entries), a.per):
         reqs = [r for e in entries[i:i + a.per] for r in build(form, a.author, e)]
-        (out / f"batch_{i // a.per + 1:02d}.json").write_text(json.dumps(reqs, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        (out / f"batch_{i // a.per + 1:02d}.json").write_text(json.dumps({"requests": reqs}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
         print(out / f"batch_{i // a.per + 1:02d}.json", [e["date"] for e in entries[i:i + a.per]], len(reqs))
 
 
