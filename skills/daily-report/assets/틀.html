@@ -1,0 +1,191 @@
+<!-- 하루 업무 보고 틀(daily-report). 꼴(색 · 글꼴 · 상태 표시 · 카드)은 그대로 두고 「칸:」이라 적힌 자리만 채운다. 쓰지 않는 절 · 흐름 · 쪽 메모는 통째로 지운다. -->
+<title>11월 17일 업무 보고</title><!-- 칸: 「M월 D일 업무 보고」 -->
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* 한 줄 세로 보고서: 머리(날짜) → 진행 띠 → 항목 카드 → 방침 → 오후 일정 */
+:root {
+  --bg: #f5f7fa;
+  --paper: #ffffff;
+  --ink: #14233d;
+  --muted: #5b6b82;
+  --line: #dde3ec;
+  --accent: #2f7fd0;
+  --accent-soft: #e6f0fb;
+  --done: #1f8a5b;
+  --done-soft: #e3f4ec;
+  --doing: #b26a00;
+  --doing-soft: #fbf0dc;
+  --wait: #6a7486;
+  --wait-soft: #eceff4;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Consolas", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1625; --paper: #162036; --ink: #e6ecf5; --muted: #9aa8bd; --line: #26324a;
+    --accent: #6fb2f2; --accent-soft: #1b2d48;
+    --done: #5fcf9a; --done-soft: #16352a; --doing: #f0b35a; --doing-soft: #3a2c14; --wait: #a7b1c2; --wait-soft: #232d40;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1625; --paper: #162036; --ink: #e6ecf5; --muted: #9aa8bd; --line: #26324a;
+  --accent: #6fb2f2; --accent-soft: #1b2d48;
+  --done: #5fcf9a; --done-soft: #16352a; --doing: #f0b35a; --doing-soft: #3a2c14; --wait: #a7b1c2; --wait-soft: #232d40;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 56px;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header { display: flex; flex-direction: column; gap: 6px; border-bottom: 2px solid var(--ink); padding-bottom: 18px; }
+.date { font-family: var(--font-mono); font-size: 13px; color: var(--accent); letter-spacing: 0.04em; }
+h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.sub { margin: 0; color: var(--muted); font-size: 14px; }
+
+.track { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.step { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.step .round { font-weight: 700; font-size: 16px; }
+.step.done { border-color: var(--done); }
+.step.doing { border-color: var(--doing); }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; white-space: nowrap; width: fit-content; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.done { color: var(--done); background: var(--done-soft); }
+.pill.doing { color: var(--doing); background: var(--doing-soft); }
+.pill.wait { color: var(--wait); background: var(--wait-soft); }
+.pill.plan { color: var(--accent); background: var(--accent-soft); }
+
+h2 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; }
+.items { display: flex; flex-direction: column; gap: 12px; }
+.item { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+.item-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.item h3 { margin: 0; font-size: 17px; font-weight: 600; min-width: 0; }
+.item ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
+.item li { color: var(--ink); }
+.item li::marker { color: var(--muted); }
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.flow span { background: var(--wait-soft); color: var(--ink); padding: 2px 10px; border-radius: 6px; }
+.flow i { font-style: normal; color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); }
+
+.pm { border-left: 3px solid var(--accent); background: var(--paper); border-radius: 0 10px 10px 0; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+.pm h3 { margin: 0; font-size: 17px; font-weight: 600; }
+.pm ul { margin: 0; padding-left: 18px; }
+
+@media (max-width: 520px) {
+  .track { grid-template-columns: 1fr; }
+  h1 { font-size: 24px; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="date">2026. 11. 17 (화)</div><!-- 칸: 날짜 · 요일(달력으로 계산) -->
+    <h1>업무 보고</h1>
+    <p class="sub">강의 준비</p><!-- 칸: 소속이나 일 이름 한 줄 -->
+  </header>
+
+  <!-- 진행 띠: 차례가 있는 일(회차 · 단계)이 있을 때만. 칸 수에 맞춰 .track의 repeat(3, …)를 고친다. 상태: done 완료 · doing 진행 · (클래스 없음) 준비 -->
+  <section>
+    <h2>회차 진행</h2>
+    <div class="track">
+      <div class="step done">
+        <span class="round">1회차</span>
+        <span class="pill done">완료</span>
+      </div>
+      <div class="step doing">
+        <span class="round">2회차</span>
+        <span class="pill doing">제작 중</span>
+      </div>
+      <div class="step">
+        <span class="round">3회차</span>
+        <span class="pill wait">준비 중</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>오늘 한 일 · 진행 상황</h2>
+    <div class="items">
+      <!-- 항목 카드 하나 = 일 하나. 상태 표시: done 완료 · doing 진행 중/마무리 단계 · wait 준비 중 · plan 예정/계획 -->
+      <article class="item">
+        <div class="item-head">
+          <h3>교재 영상 제작</h3>
+          <span class="pill done">완료</span>
+        </div>
+        <ul>
+          <li>무엇을 했는지 한 줄</li>
+          <li>어떻게 바꿨는지 한 줄</li>
+        </ul>
+      </article>
+
+      <article class="item">
+        <div class="item-head">
+          <h3>화면 개선 · 테스트</h3>
+          <span class="pill doing">마무리 단계</span>
+        </div>
+        <ul>
+          <li>지금 어디까지 왔는지 한 줄</li>
+          <li>끝나면 이어서 할 일 한 줄</li>
+        </ul>
+        <!-- 흐름: 실제로 차례가 있는 일에만 -->
+        <div class="flow"><span>개선 · 테스트</span><i>→</i><span>촬영</span><i>→</i><span>게시</span></div>
+        <!-- 쪽 메모: 용도 · 대상 한 줄, 있을 때만 -->
+        <p class="note">누가 언제 무엇에 쓰는지 한 줄</p>
+      </article>
+
+      <article class="item">
+        <div class="item-head">
+          <h3>다음 자료</h3>
+          <span class="pill wait">준비 중</span>
+        </div>
+        <ul>
+          <li>준비하는 것 한 줄</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- 방침 · 운영 계획: 한 일이 아닌 「어떻게 진행할 것인가」가 있을 때만 -->
+  <section>
+    <h2>진행 방식</h2>
+    <div class="items">
+      <article class="item">
+        <div class="item-head">
+          <h3>무엇을 어떻게 진행할지</h3>
+          <span class="pill plan">운영 계획</span>
+        </div>
+        <ul>
+          <li>기본으로 하는 것</li>
+          <li>상황에 따라 더하거나 바꾸는 것</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- 오후 · 남은 일정: 블록 하나 -->
+  <section>
+    <h2>오후</h2>
+    <div class="pm">
+      <div class="item-head">
+        <h3>미팅 · 인계</h3>
+        <span class="pill plan">오후 예정</span>
+      </div>
+      <ul>
+        <li>받거나 정할 것 한 줄</li>
+      </ul>
+    </div>
+  </section>
+</div>
