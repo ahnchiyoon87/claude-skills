@@ -58,7 +58,7 @@ def add(bucket, repo, iso, msg, sha):
 
 
 def local(bucket, author_re):
-    out = subprocess.run(["git", "-C", LOCAL, "-c", "diff.renameLimit=0", "log", "--all", f"--since={SINCE}",
+    out = subprocess.run(["git", "-C", LOCAL, "-c", "diff.renameLimit=0", "log", "--all", f"--since={SINCE} 00:00 +0900",   # 날짜만 주면 Windows git이 UTC 자정(KST 09:00)으로 읽어 새벽 커밋을 뺀다
                           "--format=%x1e%H%x1f%aI%x1f%an%x1f%B%x1f", "--name-only"],
                          capture_output=True, check=True).stdout.decode("utf-8", "replace")
     kept = dropped = 0
